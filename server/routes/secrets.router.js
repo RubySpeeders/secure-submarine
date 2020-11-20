@@ -7,14 +7,21 @@ const {
 
 router.get('/', rejectUnauthenticated, (req, res) => {
   console.log('req.user:', req.user);
-  const queryText = `SELECT *
-  FROM "user"
-  JOIN "secret" ON "user".clearance_level > "secret".secrecy_level
-  WHERE "user".clearance_level >= "secret".secrecy_level
-  ORDER BY username ASC;`;
+  const queryUserRole = `SELECT * FROM "user" where id=$1`;
   pool
-    .query('SELECT * FROM "secret";')
-    .then((results) => res.send(results.rows))
+    .query(queryUserRole, [req.user.id])
+    .then((response) => {
+      const clearanceLevel = response.rows[0].clearance_level;
+      const queryText = `SELECT * FROM "secret"
+    WHERE "secret".secrecy_level <= $1
+    ORDER BY id ASC;`;
+      pool.query(queryText, [clearanceLevel]).then((response) => {
+        res.send(response.rows).catch((error) => {
+          console.log('Error in the inner pool:', error);
+          res.sendStatus(500);
+        });
+      });
+    })
     .catch((error) => {
       console.log('Error making SELECT for secrets:', error);
       res.sendStatus(500);
