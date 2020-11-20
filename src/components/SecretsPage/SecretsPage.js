@@ -17,8 +17,8 @@ class SecretsPage extends Component {
           Clearance level: <b>{this.props.store.user.clearance_level}</b>
         </p>
         <ul>
-          {this.props.store.secrets.map((secret) => (
-            <li>
+          {this.props.store.secrets.map((secret, index) => (
+            <li key={index}>
               Clearance: {secret.secrecy_level} | Content: {secret.content}
             </li>
           ))}

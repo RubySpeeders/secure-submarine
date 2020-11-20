@@ -7,6 +7,11 @@ const {
 
 router.get('/', rejectUnauthenticated, (req, res) => {
   console.log('req.user:', req.user);
+  const queryText = `SELECT *
+  FROM "user"
+  JOIN "secret" ON "user".clearance_level > "secret".secrecy_level
+  WHERE "user".clearance_level >= "secret".secrecy_level
+  ORDER BY username ASC;`;
   pool
     .query('SELECT * FROM "secret";')
     .then((results) => res.send(results.rows))
